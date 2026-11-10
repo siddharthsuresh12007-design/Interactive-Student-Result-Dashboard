@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Result Dashboard</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e40af, #7c3aed);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            margin-bottom: 10px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        .search-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            flex: 1;
+            min-width: 180px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+
+        .student-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .student {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .student h3 {
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+
+        .student p {
+            margin: 8px 0;
+        }
+
+        .grade {
+            color: green;
+            font-weight: bold;
+        }
+
+        .no-result {
+            text-align: center;
+            padding: 20px;
+            color: red;
+            grid-column: 1 / -1;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background: #1e293b;
+            color: white;
+            border-radius: 10px;
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 24px;
+            }
+
+            .student-list {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard {
+                flex-direction: column;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>Student Result Dashboard</h1>
+        <p>Manage and View Student Academic Performance</p>
+    </header>
+
+    <!-- Dashboard Statistics -->
+
+    <div class="dashboard">
+
+        <div class="card">
+            <h2 id="totalStudents">0</h2>
+            <p>Total Students</p>
+        </div>
+
+        <div class="card">
+            <h2 id="averageMarks">0</h2>
+            <p>Class Average</p>
+        </div>
+
+        <div class="card">
+            <h2 id="passedStudents">0</h2>
+            <p>Passed Students</p>
+        </div>
+
+    </div>
+
+    <!-- Search Section -->
+
+    <div class="search-box">
+        <h3>Search Student</h3>
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Enter student name or roll number..."
+            oninput="searchStudent()">
+    </div>
+
+    <!-- Student Records -->
+
+    <h2 style="margin-bottom:20px;">Student Records</h2>
+
+    <div class="student-list" id="studentList"></div>
+
+    <footer>
+        <p>© 2026 Student Result Management System</p>
+    </footer>
+
+</div>
+
+<script>
+
+    // Student Objects and Marks Arrays
+
+    let students = [
+
+        {
+            name: "Arun Kumar",
+            roll: "101",
+            department: "Computer Science",
+            marks: [90, 85, 88, 92, 80]
+        },
+
+        {
+            name: "Rahul",
+            roll: "102",
+            department: "Information Technology",
+            marks: [75, 80, 70, 85, 78]
+        },
+
+        {
+            name: "Priya",
+            roll: "103",
+            department: "Electronics",
+            marks: [95, 92, 90, 96, 94]
+        },
+
+        {
+            name: "Karthik",
+            roll: "104",
+            department: "Mechanical",
+            marks: [55, 60, 58, 65, 62]
+        },
+
+        {
+            name: "Sneha",
+            roll: "105",
+            department: "Computer Science",
+            marks: [40, 45, 50, 48, 42]
+        }
+
+    ];
+
+
+    // Calculate Student Results
+
+    function calculateResult(marks) {
+
+        let total = marks.reduce((sum, mark) => sum + mark, 0);
+
+        let average = total / marks.length;
+
+        let grade;
+
+        if (average >= 90) {
+            grade = "A+";
+        }
+        else if (average >= 80) {
+            grade = "A";
+        }
+        else if (average >= 70) {
+            grade = "B";
+        }
+        else if (average >= 60) {
+            grade = "C";
+        }
+        else if (average >= 50) {
+            grade = "D";
+        }
+        else {
+            grade = "F";
+        }
+
+        return {
+            total: total,
+            average: average,
+            grade: grade,
+            status: average >= 50 ? "Pass" : "Fail"
+        };
+
+    }
+
+
+    // Display Student Records
+
+    function displayStudents(data) {
+
+        let studentList = document.getElementById("studentList");
+
+        studentList.innerHTML = "";
+
+        if (data.length === 0) {
+
+            studentList.innerHTML =
+                "<p class='no-result'>No Student Found!</p>";
+
+            return;
+        }
+
+        data.forEach(student => {
+
+            let result = calculateResult(student.marks);
+
+            let card = document.createElement("div");
+
+            card.className = "student";
+
+            card.innerHTML = `
+                <h3>${student.name}</h3>
+
+                <p><b>Roll Number:</b> ${student.roll}</p>
+
+                <p><b>Department:</b> ${student.department}</p>
+
+                <p><b>Marks:</b> ${student.marks.join(", ")}</p>
+
+                <p><b>Total:</b> ${result.total} / 500</p>
+
+                <p><b>Average:</b> ${result.average.toFixed(2)}%</p>
+
+                <p><b>Grade:</b>
+                    <span class="grade">${result.grade}</span>
+                </p>
+
+                <p><b>Status:</b> ${result.status}</p>
+            `;
+
+            studentList.appendChild(card);
+
+        });
+
+    }
+
+
+    // Search Student Records
+
+    function searchStudent() {
+
+        let searchValue = document
+            .getElementById("searchInput")
+            .value.toLowerCase()
+            .trim();
+
+        let filteredStudents = students.filter(student =>
+
+            student.name.toLowerCase().includes(searchValue) ||
+
+            student.roll.toLowerCase().includes(searchValue)
+
+        );
+
+        displayStudents(filteredStudents);
+
+    }
+
+
+    // Dashboard Statistics
+
+    function updateDashboard() {
+
+        let total = students.length;
+
+        let totalAverage = 0;
+
+        let passed = 0;
+
+        students.forEach(student => {
+
+            let result = calculateResult(student.marks);
+
+            totalAverage += result.average;
+
+            if (result.status === "Pass") {
+                passed++;
+            }
+
+        });
+
+        document.getElementById("totalStudents").innerText = total;
+
+        document.getElementById("averageMarks").innerText =
+            (totalAverage / total).toFixed(2) + "%";
+
+        document.getElementById("passedStudents").innerText = passed;
+
+    }
+
+
+    // Initialize Dashboard
+
+    updateDashboard();
+
+    displayStudents(students);
+
+</script>
+
+</body>
+</html>
